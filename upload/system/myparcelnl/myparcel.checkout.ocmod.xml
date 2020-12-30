@@ -323,12 +323,12 @@
     <!-- ________________ CHECKOUT.TPL  support fastor theme________________ -->
     <!-- ______________________________________________ -->
     <file path="catalog/view/theme/*/template/checkout/checkout.tpl">
-        <operation>
-            <search><![CDATA[<?php echo $header;]]></search>
-            <add position="after"><![CDATA[
-                echo $myparcel_delivery_checkout_header;
-            ]]></add>
-        </operation>
+        <!--<operation>-->
+            <!--<search><![CDATA[<?php echo $header;]]></search>-->
+            <!--<add position="after"><![CDATA[-->
+                <!--echo $myparcel_delivery_checkout_header;-->
+            <!--]]></add>-->
+        <!--</operation>-->
         <operation>
             <search><![CDATA[data: $('#collapse-shipping-method input[type=\'radio\']:checked, #collapse-shipping-method textarea'),]]></search>
             <add position="replace"><![CDATA[data: $('#collapse-shipping-method input[type=\'radio\']:checked, #collapse-shipping-method textarea, #mypa-input, #mypa-signed:checked, #mypa-recipient-only:checked'),]]></add>
