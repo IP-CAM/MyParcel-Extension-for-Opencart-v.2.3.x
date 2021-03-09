@@ -1,7 +1,7 @@
 <?php
 require_once DIR_SYSTEM . 'myparcelnl/class_myparcel.php';
 
-class ControllerExtensionTotalMyparcelTotal extends Controller {
+class ControllerTotalMyparcelTotal extends Controller {
 	public function index()
 	{
 		$data = array();

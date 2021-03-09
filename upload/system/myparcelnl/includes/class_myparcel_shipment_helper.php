@@ -14,7 +14,7 @@ class MyParcel_Shipment_Helper
 
         $shipment = array(
             'recipient' => $this->getRecipient( $order_data ),
-            'options'   => $this->getOptions( $order_data , false, true ),
+            'options'	=> $this->getOptions( $order_data ),
             'carrier'	=> 1, // default to POSTNL for now
         );
 
@@ -32,14 +32,7 @@ class MyParcel_Shipment_Helper
                 $shipment['pickup']['retail_network_id'] = $pickup['retail_network_id'];
             }
         }
-        // get physical properties
-        $shipment['physical_properties'] = $this->getPhysicalProperties($order_id, $shipment['options']['package_type']);
-        if(empty($shipment['physical_properties'])){
-            unset($shipment['physical_properties']);
-        }
-        if($shipment['options'] == null){
-            return null;
-        }
+
         return $shipment;
     }
 
@@ -57,74 +50,71 @@ class MyParcel_Shipment_Helper
             'phone'			=> !empty($connect_phone) ? $order['telephone'] : '',
         );
 
-        $use_addition_address_as_number_suffix = MyParcel()->settings->general->use_addition_address_as_number_suffix;
-        $general_custom_field_homenumber_suffix = MyParcel()->settings->general->general_custom_field_homenumber_suffix;
-        // MyParcel_Helper $helper
-        $helper = MyParcel()->helper;
-        $iso_code = @ $order['shipping_iso_code_2'];
+        $use_address2_as_suffix = MyParcel()->settings->general->use_address2_as_number_suffix;
+        $use_address2_as_suffix = (!empty($use_address2_as_suffix)) ? true : false;
 
-        switch ($iso_code) {
-            default:
-                if ((!empty($order['shipping_address_2']) && is_numeric(($order['shipping_address_2'])) && !$use_addition_address_as_number_suffix) || !$use_addition_address_as_number_suffix) {
-                    $order['shipping_address_1'] = $order['shipping_address_1'] . ' ' . $order['shipping_address_2'];
-                }
+        if ( $order['shipping_iso_code_2'] == 'NL' ) {
+            /** @var MyParcel_Helper $helper * */
+            $helper = MyParcel()->helper;
 
-                $address_parts = $helper->getAddressComponents($order['shipping_address_1']);
+            if (!empty($order['shipping_address_2']) && is_numeric(($order['shipping_address_2'])) && !$use_address2_as_suffix) {
+                $order['shipping_address_1'] = $order['shipping_address_1'] . ' ' . $order['shipping_address_2'];
+            }
 
-                if ($use_addition_address_as_number_suffix == 1) {
-                    $number_addition = isset($order['shipping_address_2']) ? $order['shipping_address_2'] : '';
-                } elseif ($use_addition_address_as_number_suffix == 2) {
-                    $address_parts['street'] = isset($order['shipping_address_1']) ? $order['shipping_address_1'] : '';
-                    $address_parts['house_number'] = isset($order['shipping_address_2']) ? $order['shipping_address_2'] : '';
-//					$number_addition = isset($order['shipping_custom_field']['address_3']) ? $order['shipping_custom_field']['address_3'] : '';
-                    $number_addition = isset($order['shipping_custom_field'][$general_custom_field_homenumber_suffix]) ? $order['shipping_custom_field'][$general_custom_field_homenumber_suffix] : '';
-                } else {
-                    $number_addition = isset($address_parts['number_addition']) ? $address_parts['number_addition'] : '';
-                }
+            $address_parts = $helper->getAddressComponents($order['shipping_address_1']);
 
-                if($helper->isModuleExist('xnlpostcode', true)){
-                    $house_number = $helper->getAddressNumberXNLPostcode($order, 'shipping_');
-                }else{
-                    $house_number = isset($address_parts['house_number']) ? trim($address_parts['house_number']) : '';
-                }
-                $address_intl = array(
-                    'street' => isset($address_parts['street']) ? $address_parts['street'] : '',
-                    'number' => $house_number,
-                    'number_suffix' => $number_addition,
-                    'postal_code' => $order['shipping_postcode'],
-                );
+            if ($use_address2_as_suffix) {
+                $number_addition = isset($order['shipping_address_2']) ? $order['shipping_address_2'] : '';
+            } else {
+                $number_addition = isset($address_parts['number_addition']) ? $address_parts['number_addition'] : '';
+            }
+
+            $address_intl = array(
+                'street' => isset($address_parts['street']) ? $address_parts['street'] : '',
+                'number' => isset($address_parts['house_number']) ? $address_parts['house_number'] : '',
+                'number_suffix' => $number_addition,
+                'postal_code' => $order['shipping_postcode'],
+            );
+
+        } elseif ($order['shipping_iso_code_2'] == 'BE') {
+
+            /** @var MyParcel_Helper $helper * */
+            $helper = MyParcel()->helper;
+            if (!empty($order['shipping_address_2']) && is_numeric(($order['shipping_address_2'])) && !$use_address2_as_suffix) {
+                $order['shipping_address_1'] = $order['shipping_address_1'] . ' ' . $order['shipping_address_2'];
+            }
+
+            $address_parts = $helper->getAddressComponents($order['shipping_address_1']);
+
+            if ($use_address2_as_suffix) {
+                $number_addition = isset($order['shipping_address_2']) ? $order['shipping_address_2'] : '';
+            } else {
+                $number_addition = isset($address_parts['number_addition']) ? $address_parts['number_addition'] : '';
+            }
+
+            $address_intl = array(
+                'street' => isset($address_parts['street']) ? $address_parts['street'] : '',
+                'number' => isset($address_parts['house_number']) ? $address_parts['house_number'] : '',
+                'number_suffix' => $number_addition,
+                'postal_code' => $order['shipping_postcode'],
+            );
+
+        } else {
+
+            $street = $order['shipping_address_1'] . (!empty($order['shipping_address_2']) ? ' ' . $order['shipping_address_2'] : '');
+
+            $address_intl = array(
+                'postal_code'				=> $order['shipping_postcode'],
+                'street'					=> $street,
+                'street_additional_info'	=> '',
+                'region'                    => isset($order['shipping_zone']) ? $order['shipping_zone'] : '',
+
+            );
         }
 
         $address = array_merge( $address, $address_intl);
+
         return $address;
-    }
-
-    public function getPhysicalProperties($order_id, $package_type){
-        /** @var ModelMyparcelnlShipment $model_shipment **/
-        $registry = MyParcel::$registry;
-        $loader = $registry->get('load');
-        $loader->model(MyParcel()->getModelPath('shipment'));
-        $model_shipment = $registry->get('model_myparcelnl_shipment');
-        $config = $registry->get('config');
-
-        $default_export_settings = $config->get('myparcelnl_fields_export');
-        $saved_export_settings = $model_shipment->getSavedExportSettings($order_id);
-
-        $properties = [];
-        switch ($package_type){
-            case '4':
-                if(isset($saved_export_settings['digital_stamp_weight'])){
-                    $properties['weight'] = intval($saved_export_settings['digital_stamp_weight']);
-                }
-                elseif(isset($default_export_settings['digital_stamp_default_weight'])){
-                    $properties['weight'] = intval($default_export_settings['digital_stamp_default_weight']);
-                }
-                break;
-            default:
-                break;
-        }
-
-        return $properties;
     }
 
     /**
@@ -134,8 +124,8 @@ class MyParcel_Shipment_Helper
      * @param boolean $view
      * @return array
      *
-     **/
-    public function getOptions( $order_data , $view = false ,$export = false)
+    **/
+    public function getOptions( $order_data , $view = false )
     {
         /** @var ModelMyparcelnlShipment $model_shipment **/
         $registry = MyParcel::$registry;
@@ -182,7 +172,7 @@ class MyParcel_Shipment_Helper
 
         $shipping_country_code = isset($order_data['shipping_iso_code_2']) ? $order_data['shipping_iso_code_2'] : '';
         // If country is not NL, disable mailbox package
-        if ($shipping_country_code != 'NL' && isset($package_type) && ($package_type == MyParcel::PACKAGE_TYPE_MAILBOX || $package_type == MyParcel::PACKAGE_TYPE_DIGITAL_STAMP)  ) {
+        if ($shipping_country_code != 'NL' && isset($package_type) && $package_type == MyParcel::PACKAGE_TYPE_MAILBOX ) {
             $package_type = MyParcel::PACKAGE_TYPE_STANDARD;
         }
 
@@ -208,11 +198,10 @@ class MyParcel_Shipment_Helper
                 'insured'           => 0,
                 'insured_amount_selectbox' => '',
                 'insured_amount'	=> 0,
-                'age_check'         => 0
             );
             $options = array_merge($defaults, $saved_export_settings);
 
-            // If shipment options from order is not saved, get options from default export settings
+        // If shipment options from order is not saved, get options from default export settings
         } else {
 
             // Parse description
@@ -308,13 +297,6 @@ class MyParcel_Shipment_Helper
 
         // Load delivery options stored from Frontend Checkout
         $myparcel_delivery_options = $model_shipment->getMyParcelDeliveryOptions($order_id);
-        //get myparcel shipment type
-        if(!empty($myparcel_delivery_options)){
-            $myparcel_shipment_type = $model_shipment->getData($order_id,'type');
-            if($myparcel_shipment_type != null && $myparcel_shipment_type != $order_data['shipping_code']){
-                $myparcel_delivery_options = array();
-            }
-        }
 
         // Set delivery type
         $options['delivery_type'] = $checkout_helper->getDeliveryTypeFromSavedData($myparcel_delivery_options);
@@ -325,57 +307,9 @@ class MyParcel_Shipment_Helper
             $options['signature'] = 1;
         }
 
-
-        //digital stamp type option
-        if($options['package_type'] == 4){
-            $options = array(
-                'package_type' => intval($options['package_type']),
-                'label_description' => $options['label_description']
-            );
-            if(empty($options['label_description'])){
-                $options['label_description'] = 'This is a digital stamp shipment!';
-            }
-            return $options;
-        }
-
         // delivery date (postponed delivery & pickup)
         if ($delivery_date = $checkout_helper->getDeliveryDateFromSavedData( $myparcel_delivery_options ) ) {
             $date_time = explode(' ', $delivery_date); // split date and time
-            if($export){
-                if(date('Y-m-d') >= date('Y-m-d',strtotime($date_time[0]))){
-                    //if date is outdate, will update it to next working date
-                    $next_working_date = MyParcel()->helper->getDeliveryNextWorkingDate($options['delivery_type'],$order_data,$this->isPickup( $order_id ));
-                    if($next_working_date == null){
-                        return null;
-                    }
-                    $delivery_time = $date_time[1];
-//                    $time_end = '';
-//                    //check if the next working date is  saturday, create only standard delivery
-//                    if(date('w', strtotime($next_working_date)) == 6){
-//                        $delivery_time = '12:00:00';
-//                        $time_end = '14:30:00';
-//                    }
-
-                    //START update delivery_option in myparcel_shipment table
-                    $myparcel_delivery_options['date'] = $next_working_date;
-//                    if(!empty($time_end)){
-//                        $time_detail_option = $myparcel_delivery_options['time'];
-//                        if(count($time_detail_option) == 1){
-//                            $time_detail_option = array_shift($myparcel_delivery_options['time']);
-//                            $time_detail_option['start'] = $delivery_time;
-//                            $time_detail_option['end'] = $time_end;
-//                            $time_detail_option['price_comment'] = 'standard';
-//                        }
-//                        $myparcel_delivery_options['time'][] = $time_detail_option;
-//                    }
-                    $model_shipment->update($order_id,'delivery_options',$myparcel_delivery_options);
-                    //END update delivery_option in myparcel_shipment table
-
-                    $delivery_date = "{$next_working_date} {$delivery_time}";
-                    $options['delivery_date'] = $delivery_date;
-                }
-
-            }
             // only add if date is in the future
             $timestamp = strtotime($date_time[0]);
             if (time() < $timestamp) {
@@ -386,7 +320,7 @@ class MyParcel_Shipment_Helper
         /**
          * Note that only when no settings saved for a shipment
          * the settings from checkout can be used
-         **/
+        **/
         if (empty($saved_export_settings)) {
             // Get options signed & recipient only from frontend checkout
             $signed = $model_shipment->getMyParcelSigned($order_id);
@@ -422,26 +356,15 @@ class MyParcel_Shipment_Helper
                 }
             }
         }
-        if($shipping_country_code == 'NL' && (((isset($default_export_settings['age_check'])) && $default_export_settings['age_check'] == 1) || ((isset($saved_export_settings['age_check'])) && $saved_export_settings['age_check'] == 1))){
-            $options['age_check'] = 1;
-            $options['only_recipient'] = 1;
-            $options['signature'] = 1;
-        }
-        else{
-            $options['age_check'] = 0;
-        }
 
         return $options;
     }
-
-
-
 
     /**
      * Save shipment options to table myparcel_shipment
      * Each order has a shipment option
      * @param array $form_data
-     **/
+    **/
     public function saveOptions($form_data = null, $is_ajax = true)
     {
         $registry = MyParcel::$registry;
@@ -469,15 +392,15 @@ class MyParcel_Shipment_Helper
             /** @var MyParcel_Shipment_Helper $shipment_helper **/
             $shipment_helper = MyParcel()->shipment->shipment_helper;
             $is_pickup = $shipment_helper->isPickup( $order_id );
-//            if ($is_pickup && (empty($shipment_options['signature']) || empty($shipment_options['only_recipient']))) {
-//                echo json_encode(
-//                    array(
-//                        'status' => 'error',
-//                        'msg' => MyParcel()->lang->get('error_signature_required'),
-//                    )
-//                );
-//                die;
-//            }
+            if ($is_pickup && (empty($shipment_options['signature']) || empty($shipment_options['only_recipient']))) {
+                echo json_encode(
+                    array(
+                        'status' => 'error',
+                        'msg' => MyParcel()->lang->get('error_signature_required'),
+                    )
+                );
+                die;
+            }
 
             // convert insurance option
             if (!empty($shipment_options['insured'])) {
@@ -537,7 +460,7 @@ class MyParcel_Shipment_Helper
      * @param int order_id
      * @param array $myparcel_delivery_options
      * @return boolean
-     **/
+    **/
     public function isPickup( $order_id = null, $myparcel_delivery_options = array() )
     {
         /** @var ModelMyparcelnlShipment $model_shipment **/
@@ -562,7 +485,7 @@ class MyParcel_Shipment_Helper
      * Get the shipping method code from the shipping quote retrieved from order data
      * @param string $shipping_quote (flat.flat, free.free, pickup.express, pickup.standard,...)
      * @return string shipping code
-     **/
+    **/
     function getShippingCodeByShippingQuote($shipping_quote)
     {
         $parts = explode('.', $shipping_quote);
@@ -800,7 +723,7 @@ class MyParcel_Shipment_Helper
      * @param integer $order_id
      * @param array $options
      * @return array shipment options
-     **/
+    **/
     public function prepareReturnShipmentData( $order_id, $options )
     {
         $registry = MyParcel::$registry;
@@ -890,7 +813,7 @@ class MyParcel_Shipment_Helper
 
                 // PREVENT ILLEGAL SETTINGS
                 // convert numeric strings to int
-                $int_options = array('package_type', 'delivery_type', 'only_recipient', 'signature', 'return', 'large_format', 'age_check');
+                $int_options = array('package_type', 'delivery_type', 'only_recipient', 'signature', 'return', 'large_format');
                 foreach ($options as $key => &$value) {
                     if (in_array($key, $int_options)) {
                         $value = (int)$value;
@@ -920,7 +843,7 @@ class MyParcel_Shipment_Helper
      * Get latest package type that was exported to MyParcel via API
      * @param int $order_id
      * @return array
-     **/
+    **/
     function getLatestPackageType($order_id)
     {
         $options = $this->getLatestExportedShipmentOptions($order_id);
@@ -935,7 +858,7 @@ class MyParcel_Shipment_Helper
      * Get latest shipment options that were exported to MyParcel via API
      * @param int $order_id
      * @return array
-     **/
+    **/
     function getLatestExportedShipmentOptions($order_id)
     {
         $registry = MyParcel::$registry;
@@ -1017,7 +940,7 @@ class MyParcel_Shipment_Helper
                         'value' => $value
                     );
 
-                    if((version_compare(VERSION, '1.5.4', '>=') || version_compare(VERSION, '2.0.0.0', '>=')) && version_compare(VERSION, '2.2.0.0', '<')) {
+                    if(version_compare(VERSION, '2.0.0.0', '>=') && version_compare(VERSION, '2.2.0.0', '<')) {
                         $product_option_value_info = $this->getProductOptionValue($product['product_id'], $option['product_option_value_id']);
                     } else {
                         $product_option_value_info = $model_product->getProductOptionValue($product['product_id'], $option['product_option_value_id']);
@@ -1053,7 +976,7 @@ class MyParcel_Shipment_Helper
      * Store the delivery options from checkout page into session
      * @param array $post_data
      * @return boolean save success or not
-     **/
+    **/
     function saveDeliveryOptionsInCheckout($post_data)
     {
         $registry = MyParcel::$registry;

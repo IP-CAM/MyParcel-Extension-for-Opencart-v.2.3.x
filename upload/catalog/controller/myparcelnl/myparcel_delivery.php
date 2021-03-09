@@ -25,17 +25,9 @@ class ControllerMyparcelnlMyparcelDelivery extends Controller
             $model_address = $this->model_account_address;
             $address_data = $model_address->getAddress($address_id);
 
-
-
-            $use_addition_address_as_number_suffix = MyParcel()->settings->general->use_addition_address_as_number_suffix;
-            if ($use_addition_address_as_number_suffix == 2) {
-                $address_data['street'] = isset($address_data['address_1']) ? $address_data['address_1'] : '';
-                $address_data['number'] = isset($address_data['address_2']) ? $address_data['address_2'] : '';
-            } else {
-                $address_parts = MyParcel($this->registry)->helper->getAddressComponents($address_data['address_1']);
-                $address_data['number'] = isset($address_parts['house_number']) ? $address_parts['house_number'] : '';
-                $address_data['street'] = isset($address_parts['street']) ? $address_parts['street'] : '';
-            }
+            $address_parts = MyParcel($this->registry)->helper->getAddressComponents($address_data['address_1']);
+            $address_data['number'] = isset($address_parts['house_number']) ? $address_parts['house_number'] : '';
+            $address_data['street'] = isset($address_parts['street']) ? $address_parts['street'] : '';
 
             if (!empty($address_data)) {
                 echo json_encode(
@@ -76,9 +68,6 @@ class ControllerMyparcelnlMyparcelDelivery extends Controller
         //TODO discriminate OC 2 and OC 1
         if (version_compare(VERSION, '2.0.0.0', '>=')) {
             $address_data = isset($session->data['shipping_address']) ? $session->data['shipping_address'] : (isset($session->data['payment_address']) ? $session->data['payment_address'] : null);
-            $address_data['address_1'] = !empty($_POST['address_1']) ? $_POST['address_1'] : $address_data['address_1'];
-            $address_data['address_2'] = !empty($_POST['address_2']) ? $_POST['address_2'] : $address_data['address_2'];
-            $address_data['city'] = !empty($_POST['city']) ? $_POST['city'] : $address_data['city'];
         } else {
             if (MyParcel()->helper->isModuleExist('d_quickcheckout', true)) {
                 $address_data['address_1'] = $session->data['shipping_address']['address_1'];
@@ -105,17 +94,10 @@ class ControllerMyparcelnlMyparcelDelivery extends Controller
             }
         }
 
-        if (!empty($address_data)) {
-
-            $use_addition_address_as_number_suffix = MyParcel()->settings->general->use_addition_address_as_number_suffix;
-            if ($use_addition_address_as_number_suffix == 2) {
-                $address_data['street'] = isset($address_data['address_1']) ? $address_data['address_1'] : '';
-                $address_data['number'] = isset($address_data['address_2']) ? $address_data['address_2'] : '';
-            } else {
-                $address_parts = MyParcel($this->registry)->helper->getAddressComponents($address_data['address_1']);
-                $address_data['number'] = isset($address_parts['house_number']) ? $address_parts['house_number'] : '';
-                $address_data['street'] = isset($address_parts['street']) ? $address_parts['street'] : '';
-            }
+        if ($address_data) {
+            $address_parts = MyParcel($this->registry)->helper->getAddressComponents($address_data['address_1']);
+            $address_data['number'] = isset($address_parts['house_number']) ? $address_parts['house_number'] : '';
+            $address_data['street'] = isset($address_parts['street']) ? $address_parts['street'] : '';
 
             // If Opencart 1x
             if (!version_compare(VERSION, '2.0.0.0', '>=')) {
@@ -157,17 +139,11 @@ class ControllerMyparcelnlMyparcelDelivery extends Controller
         $address_1 = !empty($_REQUEST['address_1']) ? $_REQUEST['address_1'] : null;
 
         if ($address_1) {
-            $use_addition_address_as_number_suffix = MyParcel()->settings->general->use_addition_address_as_number_suffix;
-            if ($use_addition_address_as_number_suffix == 2) {
-                $address_data['street'] = $address_1;
-                $address_data['number'] = isset($_REQUEST['address_2']) ? $_REQUEST['address_2'] : '';
-                $address_data['number_addition'] = isset($_REQUEST['custom_field']['address']['address_3']) ? $_REQUEST['custom_field']['address']['address_3'] : '';
-            } else {
-                $address_parts = MyParcel($this->registry)->helper->getAddressComponents($address_1);
-                $address_data['street'] = isset($address_parts['street']) ? $address_parts['street'] : '';
-                $address_data['number'] = isset($address_parts['house_number']) ? $address_parts['house_number'] : '';
-                $address_data['number_addition'] = isset($address_parts['number_addition']) ? $address_parts['number_addition'] : '';
-            }
+
+            $address_parts = MyParcel($this->registry)->helper->getAddressComponents($address_1);
+            $address_data['street'] = isset($address_parts['street']) ? $address_parts['street'] : '';
+            $address_data['number'] = isset($address_parts['house_number']) ? $address_parts['house_number'] : '';
+            $address_data['number_addition'] = isset($address_parts['number_addition']) ? $address_parts['number_addition'] : '';
 
             if (!empty($address_data)) {
                 echo json_encode(
@@ -239,7 +215,7 @@ class ControllerMyparcelnlMyparcelDelivery extends Controller
 
         $order_id = isset($_POST['myparcel_order_id']) ? $_POST['myparcel_order_id'] : null;
 
-        $total_array = $checkout_helper->getTotalArray($data, true, $order_id, 'excl ', false); // Get total with prices saved in myparcel_shipment
+        $total_array = $checkout_helper->getTotalArray($data, true, $order_id, 'incl ', false); // Get total with prices saved in myparcel_shipment
 
         ob_start();
         foreach ($total_array as $total_code => $total_item) {

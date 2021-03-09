@@ -1,5 +1,5 @@
 <?php
-class ModelExtensionShippingMyparcelPickup extends Model {
+class ModelShippingMyparcelShipping extends Model {
 	function getQuote($address) {
 
         $checkout_settings          = $this->config->get('myparcelnl_fields_checkout');
@@ -29,7 +29,7 @@ class ModelExtensionShippingMyparcelPickup extends Model {
 
 				$checkout_helper = MyParcel()->shipment->checkout;
 				$checkout_helper->setSessionOrderDeliveryOptions($this->session->data['myparcel_order_id']);
-				$data = isset($this->session->data['myparcel']) ? $this->session->data['myparcel'] : false;
+				$data = $this->session->data['myparcel'];
 
 				if ($data) {
 					$total_array = $checkout_helper->getTotalArray($data);

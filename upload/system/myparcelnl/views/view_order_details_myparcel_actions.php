@@ -2,7 +2,6 @@
     <tr>
         <td>
             <img data-toggle="tooltip" title="<?php echo 'MyParcel Actions'; ?>" src="<?php echo MyParcel()->getImageUrl() . 'icon.png' ?>"/>
-            <?php echo MyParcel()->lang->get('entry_order_details_actions'); ?>
         </td>
         <td>
             <?php echo $buttons ?>

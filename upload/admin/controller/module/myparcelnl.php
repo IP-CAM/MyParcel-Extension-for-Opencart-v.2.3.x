@@ -1,8 +1,8 @@
 <?php
 require_once DIR_SYSTEM . 'myparcelnl/class_myparcel.php';
-class ControllerExtensionModuleMyparcelnl extends Controller
+class ControllerModuleMyparcelnl extends Controller
 {
-    protected $version = '1.0.7';
+    protected $version = '1.0.4';
 
     private $error = array();
 
@@ -29,7 +29,7 @@ class ControllerExtensionModuleMyparcelnl extends Controller
 
     /**
      * Create Myparcel tables when the module is installed
-     **/
+    **/
     public function install()
     {
         $this->setup();
@@ -38,7 +38,7 @@ class ControllerExtensionModuleMyparcelnl extends Controller
         $this->model_myparcelnl_init->installMyParcelShipping();
         /**
          * Install core ocmod file
-         **/
+        **/
         $core_ocmod_file = MyParcel()->getCoreDir() . 'myparcel.ocmod.xml';
         MyParcel()->helper->install_ocmod($core_ocmod_file);
 
@@ -102,7 +102,6 @@ class ControllerExtensionModuleMyparcelnl extends Controller
 
         $data['package_types'] = $this->_getPackageTypes();
 
-
         // ******* Get all enabled shipping methods
         $data['shipping_methods'] = $this->model_myparcelnl_shipping->getShippingMethods();
 
@@ -124,7 +123,7 @@ class ControllerExtensionModuleMyparcelnl extends Controller
         $this->load->model('localisation/order_status');
         $data['order_status'] = array();
         $data['order_status'] = $this->model_localisation_order_status->getOrderStatuses();
-        $data['custom_field_address'] = MyParcel()->helper->getAddressCustomFields();
+
         $this->response->setOutput($this->load->view(MyParcel()->getMyparcelModulePath() . '.tpl', $data));
     }
 
@@ -155,8 +154,7 @@ class ControllerExtensionModuleMyparcelnl extends Controller
                     break;
                 case 'get_labels':
                     $order_ids = isset($request['order_ids']) ? $request['order_ids'] : null;
-                    $position = isset($request['position']) ? $request['position'] : null;
-                    $shipment->printPdf($order_ids,NULL,$position);
+                    $shipment->printPdf($order_ids);
                     break;
                 case 'add_return':
                     $shipment->addReturn($request); // Get return form and show in a popup
@@ -182,8 +180,7 @@ class ControllerExtensionModuleMyparcelnl extends Controller
         } elseif (isset($this->request->get['order_id'])) {
             $orders[] = $this->request->get['order_id'];
         }
-        $position = isset($this->request->post['positions']) ? $this->request->post['positions'] : null;
-        $shipment->printPdf($orders,NULL,$position);
+        $shipment->printPdf($orders);
     }
 
     public function exportBatch()
@@ -320,7 +317,6 @@ class ControllerExtensionModuleMyparcelnl extends Controller
             1 => $this->language->get('package_type_parcel'),
             2 => $this->language->get('package_type_mailbox'),
             3 => $this->language->get('package_type_unpaid_letter'),
-            4 => $this->language->get('package_type_digital_stamp'),
         );
     }
 
@@ -428,7 +424,7 @@ class ControllerExtensionModuleMyparcelnl extends Controller
                 }
             }
 
-            if ((isset($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']))) {
+            if (empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) || (empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']))) {
                 MyParcel()->notice->add($this->language->get('error_delivery_windows'), 'warning');
             }
         }

@@ -5,7 +5,6 @@ $_['heading_title']       = 'Myparcel NL';
 $_['mssg_order_status_changed_by_myparcel'] = 'MyParcel Order Status Automation';
 $_['email_track_trace'] = 'You can track your order with the following PostNL track&trace code:';
 
-$_['entry_track_trace'] = 'Track & Trace';
 $_['entry_delivery_date'] = 'Delivery date';
 $_['date_format'] = 'Y-m-d';
 $_['entry_delivery_time'] = 'Delivery time';
@@ -15,10 +14,7 @@ $_['entry_morning_delivery'] = 'Morning delivery';
 $_['entry_time_not_specified'] = 'Pickup';
 $_['entry_edit_delivery_options'] = 'Click to edit delivery options';
 $_['entry_home_address_only'] = 'Home address only';
-$_['entry_select_myparcel_delivery'] = 'Select MyParcel Delivery';
-$_['entry_select_myparcel_pickup'] = 'Select MyParcel Pickup';
 $_['entry_signed'] = 'Signature on delivery';
-$_['entry_only_recipient'] = 'Recipient Only';
 $_['entry_enabled_no'] = 'No';
 $_['entry_enabled_yes'] = 'Yes';
 $_['entry_pickup_address'] = 'Pickup address';
@@ -43,26 +39,3 @@ $_['entry_mailbox'] = 'Mailbox';
 $_['entry_delivery_type'] = 'Package Type';
 $_['entry_mailbox_desc'] = 'This package type is only available for NL shipment that fit into a mailbox';
 $_['entry_total_myparcel_mailbox'] = 'Mailbox fee';
-$_['error_address_3'] = 'Address 3 must be between 0 and 4 characters!';
-$_['error_address_2'] = 'Address 2 cannot be empty!';
-$_['error_address_3_need_edit'] = 'Address 3 must be between 0 and 4 characters! Please edit your address';
-$_['error_address_2_need_edit'] = 'Address 2 cannot be empty! Please edit your address';
-
-$_['entry_additional_service'] = 'Additional Service';
-$_['error_external_validate']	= 'The MyParcel option is either not selected or it is past the allowed time to order! Please select the option again!';
-
-$_['entry_myparcel_delivery'] = 'MyParcel Delivery';
-$_['entry_myparcel_pickup'] = 'MyParcel Pickup';
-$_['entry_select'] = 'Select';
-$_['entry_date'] = 'Date';
-$_['entry_pickup_from'] = 'Pickup from';
-$_['entry_edit_myparcel_delivery'] = 'Edit Delivery Date';
-$_['entry_edit_myparcel_pickup'] = 'Edit Pickup Option';
-
-$_['entry_delivery_morning'] = 'Morning';
-$_['entry_delivery_standard'] = 'Standard';
-$_['entry_delivery_avond'] = 'Avond';
-
-$_['entry_title_location'] = 'Location';
-
-$_['entry_myparcel_api_error_code_3505'] = 'The zip code entered is incorrect';

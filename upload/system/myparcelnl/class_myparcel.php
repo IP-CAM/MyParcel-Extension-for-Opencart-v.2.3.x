@@ -18,7 +18,6 @@ class MyParcel
     const PACKAGE_TYPE_STANDARD = 1;
     const PACKAGE_TYPE_MAILBOX = 2;
     const PACKAGE_TYPE_LETTER = 3;
-    const PACKAGE_TYPE_DIGITAL_STAMP = 4;
 
     /**
      * MyParcel constructor.
@@ -37,8 +36,7 @@ class MyParcel
 
             if (empty($this->lang)) {
                 $this->lang = $registry->get('language');
-                //prevent overriding heading_title
-                $this->loadMyparcelLang($this->lang);
+                $this->lang->load($this->getMyparcelModulePath());
             }
             $this->shipment = require_once (dirname(__FILE__) . '/includes/class_myparcel_shipment.php');
             $this->notice = require_once (dirname(__FILE__) . '/includes/class_myparcel_notice.php');
@@ -77,13 +75,6 @@ class MyParcel
         } else {
             return 'module/';
         }
-    }
-    function getMyparcelXtensionViewPath(){
-        return 'myparcelnl/';
-    }
-
-    function getMyparcelXtensionControllerPath(){
-        return 'myparcelnl/myparcel_xtension_delivery';
     }
 
     function getModuleListPath()
@@ -213,17 +204,6 @@ class MyParcel
                 break;
             default:
                 $document->addScript($this->getJsUrl() . $script_name . '.js');
-        }
-    }
-
-    function loadMyparcelLang($lang = null)
-    {
-        if ($lang instanceof Language) {
-            $old_heading_title = $lang->get('heading_title');
-            $lang->load(MyParcel()->getMyparcelModulePath());
-            if (!empty($old_heading_title) && $old_heading_title != 'heading_title') {
-                $lang->set('heading_title', $old_heading_title);
-            }
         }
     }
 }
