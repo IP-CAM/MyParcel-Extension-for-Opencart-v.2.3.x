@@ -24,10 +24,10 @@ var MYPARCEL_SHIPMENT = MYPARCEL_SHIPMENT || {};
                 var button_id = '#btn-myparcel-' + action + '-' + order_id;
 
                 var data = {
-                    order_ids: [order_id],
-                    action: action,
-                    screen: screen
-                };
+                        order_ids: [order_id],
+                        action: action,
+                        screen: screen
+                    };
 
                 $.ajax({
                     url: $(this).attr('href'),
@@ -49,9 +49,6 @@ var MYPARCEL_SHIPMENT = MYPARCEL_SHIPMENT || {};
                                 }
                             }
                         }
-                        else{
-                            swal(res.errors.join('.'));
-                        }
 
                         MYPARCEL_SHIPMENT.helper.enableActionButtons(order_id);
                     },
@@ -67,34 +64,6 @@ var MYPARCEL_SHIPMENT = MYPARCEL_SHIPMENT || {};
              * [Event Click]
              * **/
             $(document).on('click', '.get_labels', function() {
-                // setTimeout( function() {
-                //     location.reload();
-                // }, 2000);
-                // return true;
-            });
-
-            $(document).on('click','.btn-print-label-order',function () {
-                var element = this;
-                var order_id = $(element).attr('data-order-id');
-                var position_label = new Array();
-                var url = $(element).attr('data-url');
-
-                var elePosition = $('#position_label_modal_' + order_id +' .a6-label');
-
-                for(var i = 0; i < elePosition.length ; i++){
-                    if($(elePosition[i]).hasClass('active')){
-                        var number = $(elePosition[i]).find('.fa-check').attr('data-position_number');
-                        position_label.push(number)
-                    }
-                }
-                if(position_label.length > 1){
-                    $('#position_label_modal_' + order_id).modal('hide');
-                    swal('You only choose 1 position.')
-                    return false;
-                }
-
-                url += '&position=' + position_label.join(',');
-                window.open(url,'_blank');
                 setTimeout( function() {
                     location.reload();
                 }, 2000);
@@ -293,9 +262,9 @@ var MYPARCEL_SHIPMENT = MYPARCEL_SHIPMENT || {};
 
                                 $('input[name="selected[]"]').prop('checked', false)
                             }
-
+                            
                         } else{
-                            swal(error_text);
+                            alert(error_text);
                             console.log(res.errors);
                             location.reload();
                         }
@@ -311,125 +280,45 @@ var MYPARCEL_SHIPMENT = MYPARCEL_SHIPMENT || {};
              * Click print batch in list order
              * **/
             $(document).on('click', '#button-print-batch', function() {
+
+                if ($(this).data('version') != 1) {
+                    setTimeout( function() {
+                        location.reload();
+                    }, 2000);
+                    return true;
+                }
+
                 if ($('input[name="selected[]"]:checked').length <= 0) {
                     return false;
                 }
-                var eleInputSeleted = $('input[name="selected[]"]:checked');
-                //order have not been exported yet
-                var orderNotExported = new Array();
-                var errorMessage = '';
-                for (i = 0; i < eleInputSeleted.length; i++){
-                    if($('#btn-myparcel-get_labels-' + $(eleInputSeleted[i]).val()).length == 0){
-                        orderNotExported.push('#'+ $(eleInputSeleted[i]).val());
-                        $(eleInputSeleted[i]).prop('checked',false);
-                    }
-                }
-                if(orderNotExported.length > 0){
-                    if(orderNotExported.length > 1){
-                        var lastOrderId = orderNotExported.pop();
-                        errorMessage = 'You are trying to download labels but Orders ' + orderNotExported.join(',') + ' and ' + lastOrderId + ' have not been exported yet.'
-                    }
-                    else{
-                        errorMessage = 'You are trying to download labels but Order ' + orderNotExported.pop() + ' has not been exported yet.'
-                    }
+                var button_id = '#'+$(this).attr("id");
+                var loader_content = '<img src="' + $(this).data('loader') + '">';
+                var btn = $(this);
 
-                    if ($('input[name="selected[]"]:checked').length <= 0) {
-                        // alert(errorMessage  + ' Please choose other orders!');
-                        swal(errorMessage  + ' Please choose other orders!');
-                        return false;
-                    }
-                    extensionMessage = 'Do you want to download the labels of the orders which have been exported?';
-                    swal({
-                            title: "",
-                            text: errorMessage + extensionMessage,
-                            type: "warning",
-                            showCancelButton: true,
-                            confirmButtonClass: "btn-primary",
-                            confirmButtonText: "OK",
-                            cancelButtonText: "Cancel",
-                            closeOnConfirm: true,
-                            closeOnCancel: true
-                        },
-                        function(isConfirm) {
-                            if (isConfirm) {
-                                showPositionModal();
-                            }
-                        });
-                    return false;
-                }
+                $.ajax({
+                    url: $(this).attr('formaction'),
+                    data: $('input[name="selected[]"]:checked:visible'),
+                    type: 'POST',
+                    dataType: 'json',
+                    beforeSend: function() {
+                        btn.prop('disabled', true);
+                        MYPARCEL_SHIPMENT.helper.showLoadingIconInButton(button_id, loader_content);
+                    },
+                    success: function(res) {
+                        btn.prop('disabled', false);
+                        MYPARCEL_SHIPMENT.helper.hideLoadingIconInButton(button_id);
 
-                showPositionModal();
+                        if (res.status == 'success') {
+                            setTimeout( function() {
+                                location.reload();
+                            }, 2000);
+                            $('#form_selected_orders').html(res.html);
+                            $('#form_selected_orders').submit();
+                        }
+                    }
+                });
                 return false;
-
             });
-
-            $(document).on('click','.btn-print-multi-label-order',function (e) {
-                if ($('input[name="selected[]"]:checked').length <= 0) {
-                    return false;
-                }
-                var elePosition = $('#position_label_modal .a6-label');
-                var eleInputSeleted = $('input[name="selected[]"]:checked');
-                var position_label = new Array();
-                for(var i = 0; i < elePosition.length ; i++){
-                    if($(elePosition[i]).hasClass('active')){
-                        var number = $(elePosition[i]).find('.fa-check').attr('data-position_number');
-                        position_label.push(number)
-                    }
-                }
-                if(position_label.length > eleInputSeleted.length){
-                    $('#position_label_modal').modal('hide');
-                    swal('You can only select up to '+ eleInputSeleted.length +' position.')
-                    return false;
-                }
-                // position_label.sort();
-                $('#form-order').append('<input type="hidden" value="'+ position_label.join(';') +'" name="positions">');
-                setTimeout( function() {
-                    location.reload();
-                }, 2000);
-                return true;
-            });
-
-            $(document).on('click','.a6-label',function () {
-                var element = this;
-
-                if($(element).hasClass('active')){
-                    $(element).removeClass('active');
-                    $(element).find('.fa-check').addClass('hidden');
-                    $(element).find('.fa-times').removeClass('hidden');
-                }
-                else{
-                    $(element).addClass('active');
-                    $(element).find('.fa-check').removeClass('hidden');
-                    $(element).find('.fa-times').addClass('hidden');
-                }
-
-            });
-
-            function showPositionModal() {
-                unCheckAllPaper();
-                var elePosition = $('#position_label_modal .a6-label');
-                var eleInputSeleted = $('input[name="selected[]"]:checked');
-                var count = elePosition.length;
-                if(count > eleInputSeleted.length){
-                    count = eleInputSeleted.length
-                }
-                for (var i = 0; i < count; i++){
-                    $(elePosition[i]).click();
-                }
-                $('#position_label_modal').modal('show');
-                return false;
-            }
-
-            function unCheckAllPaper(){
-                var element = $('#position_label_modal .a6-label');
-                for(var i = 0; i< element.length; i++){
-                    if($(element).hasClass('active')){
-                        $(element).removeClass('active');
-                        $(element).find('.fa-check').addClass('hidden');
-                        $(element).find('.fa-times').removeClass('hidden');
-                    }
-                }
-            }
 
             $(document).on('change', '.checkbox-for-all', function() {
                 $('#button-print-batch').prop('disabled', !$(this).prop('checked'));
@@ -505,14 +394,14 @@ var MYPARCEL_SHIPMENT = MYPARCEL_SHIPMENT || {};
                     order_id:   order_id,
                     form_data:  form_data,
                 };
-
+                
                 $.ajax({
                     url: url,
                     data: data,
                     type: 'POST',
                     dataType: 'json',
                     beforeSend: function() {
-                        $form.find('.oc_save_shipment_settings .waiting').show();
+                       $form.find('.oc_save_shipment_settings .waiting').show();
                     },
                     success: function(res) {
                         if (res.status == 'error') {
@@ -523,7 +412,7 @@ var MYPARCEL_SHIPMENT = MYPARCEL_SHIPMENT || {};
                         }else{
                             // set main text to selection
                             $package_type_text_element.text(package_type);
-
+                        
                             // hide spinner
                             $form.find('.oc_save_shipment_settings .waiting').hide();
                             //remove div errors
@@ -531,7 +420,7 @@ var MYPARCEL_SHIPMENT = MYPARCEL_SHIPMENT || {};
 
                             // hide the form
                             $form.slideUp();
-
+                            
                         }
                     },
 
@@ -542,30 +431,15 @@ var MYPARCEL_SHIPMENT = MYPARCEL_SHIPMENT || {};
             // hide all options if not a parcel
             $(document).on('change', 'select.package_type', function () {
                 var parcel_options  = $( this ).closest('table').parent().find('.parcel_options');
-                var digital_stamp_options  = $( this ).closest('table').parent().find('.digital_stamp_options');
                 if ( $( this ).val() == '1') {
                     // parcel
                     $( parcel_options ).find('input, textarea, button, select').prop('disabled', false);
                     $( parcel_options ).show();
                     $( parcel_options ).find('.insured').change();
-                    $( digital_stamp_options ).find(' select').prop('disabled', true);
-                    $( digital_stamp_options ).hide();
-                } else if($( this ).val() == '4'){
-                    //digital stamp type
-                    $( digital_stamp_options ).find(' select').prop('disabled', false);
-                    $( digital_stamp_options ).show();
-
-                    $( parcel_options ).find('input, textarea, button, select').prop('disabled', true);
-                    $( parcel_options ).hide();
-
                 } else {
                     // not a parcel
                     $( parcel_options ).find('input, textarea, button, select').prop('disabled', true);
                     $( parcel_options ).hide();
-
-                    //disable digital stamp options
-                    $( digital_stamp_options ).find(' select').prop('disabled', true);
-                    $( digital_stamp_options ).hide();
                     // No need the 2 lines below because "not a parcel" packages have no addition options and "insured" will be filtered in backend code
                     //$( parcel_options ).find('.insured').prop('checked', false);
                     //$( parcel_options ).find('.insured').change();
@@ -633,7 +507,7 @@ var MYPARCEL_SHIPMENT = MYPARCEL_SHIPMENT || {};
                         $( insured_input ).prop('disabled', true);
                         $( insured_input ).closest('tr').hide();
                     }
-
+                    
                 }
             }).change(); //ensure visible state matches initially
             $('.ocmyparcel_settings_table select.insured_amount').change();

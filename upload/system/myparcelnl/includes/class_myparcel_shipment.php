@@ -54,9 +54,6 @@ class MyParcel_Shipment
                 if (!empty($shipment_data_single)) {
                     $shipment_data[] = $shipment_data_single;
                 }
-                else{
-                    $this->errors[] = sprintf(MyParcel()->lang->get('error_cannot_export_order_shipment'), $order_id);
-                }
             }
 
             // Call API to export an order shipment to MyParcel
@@ -145,7 +142,7 @@ class MyParcel_Shipment
                             }
                         }
                     } else {
-                        $this->errors[] = strip_tags($response['body']);
+                        $this->errors[] = 'Body data returned from API is empty';
                     }
                 }
             } else {
@@ -234,7 +231,7 @@ class MyParcel_Shipment
      * @param string $label_response_type
      * @return response from api
      **/
-    function printPdf($order_ids, $label_response_type = NULL,$position = NULL)
+    function printPdf($order_ids, $label_response_type = NULL)
     {
         if (empty($order_ids)) {
            $this->errors[] = 'No order specified for printing PDF';
@@ -247,11 +244,6 @@ class MyParcel_Shipment
         $return = array();
         /** @var MyParcel_Helper $helper **/
         $helper = MyParcel()->helper;
-        /** @var ModelMyparcelnlShipment $model_shipment **/
-        $registry = MyParcel::$registry;
-        $loader = $registry->get('load');
-        $loader->model(MyParcel()->getModelPath('shipment'));
-        $model_shipment = $registry->get('model_myparcelnl_shipment');
 
         $shipment_ids = $shipment_helper->getShipmentIdsByOrderIds( $order_ids, array( 'only_last' => true ) );
 
@@ -265,10 +257,7 @@ class MyParcel_Shipment
 
         MyParcel()->log->add("*** Label request started ***");
         MyParcel()->log->add("Shipment ID's: ".implode(', ', $shipment_ids));
-        $params = array();
-        if($position != null){
-            $params['positions'] = $position;
-        }
+
         try {
             if ($label_response_type == 'url') {
                 $response = $api->getShipmentLabels( $shipment_ids, array(), 'link' );
@@ -281,35 +270,13 @@ class MyParcel_Shipment
                     MyParcel()->log->add(MyParcel()->lang->get('error_unknown'));
                 }
             } else {
-                $response = $api->getShipmentLabels( $shipment_ids, $params, 'pdf' );
+                $response = $api->getShipmentLabels( $shipment_ids, array(), 'pdf' );
 
                 if (isset($response['body'])) {
                     MyParcel()->log->add(MyParcel()->lang->get("log_pdf_data_received"));
                     $pdf_data = $response['body'];
                     $setting_download_display = MyParcel()->settings->general->pdf;
                     $output_mode = !empty($setting_download_display) ? 'download' : 'display';
-
-                    foreach ( $order_ids as $order_id) {
-                        $order_shipments = $model_shipment->getSavedMyParcelShipments($order_id);
-                        $is_update_external_id = false;
-                        $shipment_id = null;
-                        foreach ( $order_shipments as $key => $shipment) {
-                            if(isset($shipment['tracktrace']) && !empty($shipment['tracktrace'])) {
-                                $model_shipment->update($order_id, 'external_id', $shipment['tracktrace']);
-                                $is_update_external_id = true;
-                            }
-                            $shipment_id = $key;
-                        }
-                        if(!$is_update_external_id){
-                            $shipment_info = $api->getShipments($shipment_id);
-                            if(isset($shipment_info['code']) && $shipment_info['code'] == 200){
-                                if(isset($shipment_info['body']['data']['shipments'][0]['external_identifier'])){
-                                    $model_shipment->update($order_id,'external_id',$shipment_info['body']['data']['shipments'][0]['external_identifier']);
-                                }
-                            }
-                        }
-
-                    }
 
                     if ( $output_mode == 'display' ) {
                         $shipment_helper->streamPdf( $pdf_data, $order_ids );

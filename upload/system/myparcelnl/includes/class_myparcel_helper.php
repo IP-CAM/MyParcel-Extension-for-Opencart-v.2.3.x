@@ -285,28 +285,7 @@ class MyParcel_Helper
 
     function _splitStreet($fullStreet)
     {
-        //$split_street_regex = '~(?P<street>.*?)\s?(?P<street_suffix>(?P<number>[\d]+)-?(?P<number_suffix>[a-zA-Z/\s]{0,5}$|-?[0-9/]{0,5}$|\s[a-zA-Z]{1}-?[0-9]{0,3}$))$~';
-        $split_street_regex =  '~(?P<street>.*?)'.                  // The rest belongs to the street
-
-            '\s?'.                               // Separator between street and number
-
-            '(?P<number>\d{1,4})'.               // Number can contain a maximum of 4 numbers
-
-            '[\/\s\-]{0,2}'.                      // Separators between number and addition
-
-            '(?P<number_suffix>'.
-
-            '[a-zA-Z]{1}\d{1,3}|'.           // Numbers suffix starts with a letter followed by numbers or
-
-            '-\d{1,4}|'.                     // starts with - and has up to 4 numbers or
-
-            '\d{2}\w{1,2}|'.                 // starts with 2 numbers followed by letters or
-
-            '[a-zA-Z]{1}[a-zA-Z\s]{0,3}'.    // has up to 4 letters with a space
-
-            ')?$~';
-
-
+        $split_street_regex = '~(?P<street>.*?)\s?(?P<street_suffix>(?P<number>[\d]+)-?(?P<number_suffix>[a-zA-Z/\s]{0,5}$|-?[0-9/]{0,5}$|\s[a-zA-Z]{1}-?[0-9]{0,3}$))$~';
         $fullStreet = preg_replace("/[\n\r]/", "", $fullStreet);
         $result = preg_match($split_street_regex, $fullStreet, $matches);
 
@@ -357,11 +336,12 @@ class MyParcel_Helper
     function getAddressComponents($address)
     {
         $ret = array();
+
         $address = trim($address);
         $is_single_word = (strpos($address, ' ') === false) ? true : false;
 
 
-        $arrExclude = [' bus ', '/bus ', '/ bus ', ' bte ', '/bte ', '/ bte ', ' box ', '/box ', '/ box ', ' boîte ','/boîte ', '/ boîte '];
+        $arrExclude = [' bus ', ' bte ', ' box ',' boîte '];
         foreach ($arrExclude as $value){
             if(strpos($address,$value) !== false){
                 $address = explode($value,$address)[0];
@@ -410,8 +390,7 @@ class MyParcel_Helper
             $ret['street'] = str_replace('-', '', $ret['street']);
             $ret['street'] .= ' -' . $ret['house_number'];
             $ret['force_addition_number'] = true;
-            $number_addition = (isset($ret['number_addition'])) ? $ret['number_addition'] : '';
-            return $this->_splitMultipleHouseNumberStreet( $ret['street'] ,$number_addition);
+            return $this->_splitMultipleHouseNumberStreet( $ret['street'] ,$ret['number_addition']);
         }
         /** END @Since the fix for negative house number (64-69) **/
 
@@ -481,17 +460,17 @@ class MyParcel_Helper
      * @param Array $errors
      * @return HTML content of errors
      *
-     **/
+    **/
     function renderErrors($errors)
     {
         if (empty($errors)) {
             return '';
         }
         ob_start();
-        ?>
+?>
         <div id="myparcel-error-messages-wrapper" class="alert alert-danger">
             <ul>
-                <?php
+<?php
                 foreach ($errors as $error)
                 {
                     ?>
@@ -501,10 +480,10 @@ class MyParcel_Helper
                     </li>
                     <?php
                 }
-                ?>
+?>
             </ul>
         </div>
-        <?php
+<?php
         $html = ob_get_clean();
 
         return $html;
@@ -668,11 +647,8 @@ class MyParcel_Helper
         $data['entry_tab_1_automatic_order_status'] = $language->get('entry_tab_1_automatic_order_status');
         $data['entry_tab_1_keep_old_shipments'] = $language->get('entry_tab_1_keep_old_shipments');
         $data['entry_tab_1_checkbox_keep_old_shipments'] = $language->get('entry_tab_1_checkbox_keep_old_shipments');
-        $data['entry_tab_1_label_use_addition_address_as_number_suffix'] = $language->get('entry_tab_1_label_use_addition_address_as_number_suffix');
-        $data['entry_tab_1_checkbox_use_address1_and_address2'] = $language->get('entry_tab_1_checkbox_use_address1_and_address2');
+        $data['entry_tab_1_label_use_address2_as_number_suffix'] = $language->get('entry_tab_1_label_use_address2_as_number_suffix');
         $data['entry_tab_1_checkbox_use_address2_as_number_suffix'] = $language->get('entry_tab_1_checkbox_use_address2_as_number_suffix');
-        $data['entry_tab_1_checkbox_use_address3_as_number_suffix_1'] = $language->get('entry_tab_1_checkbox_use_address3_as_number_suffix_1');
-        $data['entry_tab_1_checkbox_use_address3_as_number_suffix_2'] = $language->get('entry_tab_1_checkbox_use_address3_as_number_suffix_2');
         $data['entry_tab_1_diagnostic_tools'] = $language->get('entry_tab_1_diagnostic_tools');
         $data['entry_tab_1_log_api_communication'] = $language->get('entry_tab_1_log_api_communication');
         $data['entry_tab_1_checkbox_log_api_communication'] = $language->get('entry_tab_1_checkbox_log_api_communication');
@@ -694,8 +670,6 @@ class MyParcel_Helper
         $data['entry_tab_2_checkbox_return_no_answer']       = $language->get('entry_tab_2_checkbox_return_no_answer');
         $data['entry_tab_2_title_insured_shipment']          = $language->get('entry_tab_2_title_insured_shipment');
         $data['entry_tab_2_title_insured_amount']            = $language->get('entry_tab_2_title_insured_amount');
-        $data['entry_tab_2_title_age_check']                 = $language->get('entry_tab_2_title_age_check');
-        $data['entry_tab_2_title_age_check_desrition']       = $language->get('entry_tab_2_title_age_check_desrition');
         $data['entry_tab_2_title_insured_amount_custom']     = $language->get('entry_tab_2_title_insured_amount_custom');
         $data['entry_tab_2_checkbox_insured_shipment']       = $language->get('entry_tab_2_checkbox_insured_shipment');
         $data['entry_tab_2_title_label_description']         = $language->get('entry_tab_2_title_label_description');
@@ -703,7 +677,6 @@ class MyParcel_Helper
         $data['entry_tab_2_title_empty_parcel_weight']       = $language->get('entry_tab_2_title_empty_parcel_weight');
         $data['entry_tab_2_textbox_empty_parcel_weight']     = $language->get('entry_tab_2_textbox_empty_parcel_weight');
         $data['entry_tab_2_select_package_types']            = $language->get('entry_tab_2_select_package_types');
-        $data['entry_tab_2_default_weight']            = $language->get('entry_tab_2_default_weight');
 
         $data['entry_tab_2_select_insured_up_to_50']  = $language->get('entry_tab_2_select_insured_up_to_50');
         $data['entry_tab_2_select_insured_up_to_250'] = $language->get('entry_tab_2_select_insured_up_to_250');
@@ -745,16 +718,6 @@ class MyParcel_Helper
         $data['entry_tab_3_label_belgium_pickup_fee'] = $language->get('entry_tab_3_label_belgium_pickup_fee');
         $data['entry_tab_3_label_cut_off_weekday'] = $language->get('entry_tab_3_label_cut_off_weekday');
         $data['error_cut_off_not_correct_format'] = $language->get('error_cut_off_not_correct_format');
-        $data['entry_tab_3_label_only_apply_for_xtension_checkout'] = $language->get('entry_tab_3_label_only_apply_for_xtension_checkout');
-        $data['entry_tab_3_label_time_format'] = $language->get('entry_tab_3_label_time_format');
-        $data['entry_tab_3_label_time_format_description'] = $language->get('entry_tab_3_label_time_format_description');
-        $data['entry_tab_3_label_distance'] = $language->get('entry_tab_3_label_distance');
-        $data['entry_tab_3_label_rounding_distance'] = $language->get('entry_tab_3_label_rounding_distance');
-        $data['entry_tab_3_label_rounding_distance_description'] = $language->get('entry_tab_3_label_rounding_distance_description');
-        $data['entry_tab_3_distance_format_kilometer'] = $language->get('entry_tab_3_distance_format_kilometer');
-        $data['entry_tab_3_distance_format_meter'] = $language->get('entry_tab_3_distance_format_meter');
-        $data['entry_tab_3_label_default_price_0_text'] = $language->get('entry_tab_3_label_default_price_0_text');
-        $data['entry_tab_3_label_default_price_0_text_description'] = $language->get('entry_tab_3_label_default_price_0_text_description');
 
         $data['days_of_the_week'] = array(
             '0' => $language->get('Sunday'),
@@ -773,44 +736,11 @@ class MyParcel_Helper
             '' => $language->get('entry_tab_2_select_insured_500'),
         );
 
-        $data['distance_format'] = array(
-            'm' => $language->get('entry_tab_3_distance_format_meter'),
-            'km' => $language->get('entry_tab_3_distance_format_kilometer'),
-        );
 
         $data['button_save'] = $language->get('button_save');
         $data['button_cancel'] = $language->get('button_cancel');
 
-        // add digital_stamp default weight
-        $data['digital_stamp_default_weight'] = $this->_getDigitalStampDefaultWeight();
-        $data['digital_stamp_code'] = $this->_getDigitalStampCode();
-
-
         return $data;
-    }
-
-    /**
-     * Retrieve Digital Stamp Default Weight
-     * @return array of weight key - value pairs
-     **/
-    public function _getDigitalStampDefaultWeight()
-    {
-        return array(
-            20 => '0 - 20 gram',
-            50 => '20 - 50 gram',
-            100 => '50 - 100 gram',
-            350 => '100 - 350 gram',
-            2000 => '350 - 2000 gram',
-        );
-    }
-
-    /**
-     * Retrieve Digital Stamp code
-     * @return int Digital Stamp code
-     **/
-    public function _getDigitalStampCode()
-    {
-        return 4;
     }
 
     /**
@@ -835,7 +765,7 @@ class MyParcel_Helper
      * @param string $module
      * @param boolean $check_status
      * @return boolean
-     **/
+    **/
 
     function isModuleExist($module, $check_status = false)
     {
@@ -858,355 +788,6 @@ class MyParcel_Helper
         }
     }
 
-
-    /**
-     * Get Address 2 or say address number if xtensions netherlands postcode module is installed!
-     **/
-    function getAddressNumberXNLPostcode($shipping_address, $prefix = ''){
-        $registry = $db = MyParcel::$registry;
-        if(version_compare(VERSION, '3.0.0.0')>=0){
-            $field = $registry->get('config')->get('module_xnlpostcode_nl_housenumber');
-        }else{
-            $field = $registry->get('config')->get('xnlpostcode_nl_housenumber');
-        }
-        if($field){
-            if(in_array($field, array('address_2','company'))){
-                return (isset($shipping_address[$prefix . $field])) ? $shipping_address[$prefix . $field] : '';
-            }else{
-                return (isset($shipping_address[$prefix . 'custom_field'][$field])) ? $shipping_address[$prefix . 'custom_field'][$field] : '';
-            }
-        }
-        return $shipping_address[$prefix . 'address_2'];
-    }
-
-    public function getAddressCustomFields(){
-        $registry = $db = MyParcel::$registry;
-        $db = $registry->get('db');
-        $query = $db->query("SELECT cfd.custom_field_id AS id, cfd.name  FROM `" . DB_PREFIX . "custom_field` cf JOIN `" . DB_PREFIX . "custom_field_description` cfd ON cf.custom_field_id = cfd.custom_field_id WHERE cf.status = 1 AND cf.location = 'address' ");
-        return array_merge($query->rows);
-    }
-
-    public function getDeliveryParams($shipping_address, $prefix = ''){
-
-        $shipment_class = MyParcel()->shipment;
-        $registry = MyParcel::$registry;
-        $checkout_helper = $shipment_class->checkout;
-        $config = $registry->get('config');
-
-        $myparcelnl_checkout_settings = $config->get('myparcelnl_fields_checkout');
-        $myparcelnl_general_settings = $config->get('myparcelnl_fields_general');
-
-        $deliverydays_window = isset($myparcelnl_checkout_settings['delivery_days_window']) ? $myparcelnl_checkout_settings['delivery_days_window'] : 4;
-        $use_addition_address_as_number_suffix = MyParcel()->settings->general->use_addition_address_as_number_suffix;
-        if (!empty($shipping_address[$prefix.'address_2']) && !$use_addition_address_as_number_suffix) {
-            $shipping_address[$prefix.'address_1'] = $shipping_address[$prefix.'address_1'] . ' ' . $shipping_address[$prefix.'address_2'];
-        }
-        $address_parts = $this->getAddressComponents($shipping_address[$prefix.'address_1']);
-        if($this->isModuleExist('xnlpostcode', true)){
-            $house_number = $this->getAddressNumberXNLPostcode($shipping_address, $prefix);
-        }else{
-            $house_number = isset($address_parts['house_number']) ? $address_parts['house_number'] : '';
-        }
-
-        $exclude_delivery_types = array();
-        foreach ($checkout_helper::$delivery_types_as_value as $delivery_type => $key) {
-            // JS API correction
-            if ($delivery_type == 'default' || $delivery_type == 'mailbox' || $delivery_type == 'avond') {
-                continue;
-            }
-            if (!isset($myparcelnl_checkout_settings[$delivery_type.'_enabled']) || (isset($myparcelnl_checkout_settings[$delivery_type.'_enabled']) && empty($myparcelnl_checkout_settings[$delivery_type.'_enabled']) ) ) {
-                $exclude_delivery_types[] = $key;
-            }
-        }
-        $exclude_delivery_types = implode(';', $exclude_delivery_types);
-
-        /**
-         * Get cut_off_time based on current day
-         **/
-        $cut_off_time = !empty($myparcelnl_checkout_settings['cut_off_time']) ? $myparcelnl_checkout_settings['cut_off_time'] : '';
-        // If cut_off_time by weekdays enabled
-        $cut_off_time_weekdays_enabled = !empty($myparcelnl_checkout_settings['cut_off_weekday']) ? $myparcelnl_checkout_settings['cut_off_weekday'] : '';
-        if ($cut_off_time_weekdays_enabled) {
-            $day_of_week = date('w');
-            $cut_off_time = (!empty($myparcelnl_checkout_settings['cut_off_time_weekdays'][$day_of_week]) ? $myparcelnl_checkout_settings['cut_off_time_weekdays'][$day_of_week] : '');
-        }
-        $delivery_params = array(
-            'cc' => $shipping_address[$prefix.'iso_code_2'],
-            'postal_code'   => str_replace(' ', '',$shipping_address[$prefix.'postcode']),
-            'street'        => isset($address_parts['street']) ? strtolower($address_parts['street']) :"",
-            'number'        => $house_number,
-            'carrier'       => 1,
-            'cutoff_time'   => $cut_off_time,
-            'exclude_delivery_type' => $exclude_delivery_types,
-            'deliverydays_window' => $deliverydays_window,
-            'monday_delivery' => '1',
-            'dropoff_delay' => (isset($myparcelnl_checkout_settings['dropoff_delay']) && $myparcelnl_checkout_settings['dropoff_delay'] != '') ? $myparcelnl_checkout_settings['dropoff_delay'] : 0
-        );
-
-        //get dropoff days
-        $dropoff_day = isset($myparcelnl_checkout_settings['dropoff_days']) ? $myparcelnl_checkout_settings['dropoff_days'] : '';
-        if(!empty($dropoff_day)){
-            $delivery_params['dropoff_days'] = implode(';',$dropoff_day);
-        }
-
-        if(isset($myparcelnl_general_settings['use_addition_address_as_number_suffix'])){
-            switch ((int)$myparcelnl_general_settings['use_addition_address_as_number_suffix']){
-                case 1:
-                    if($house_number == ''){
-                        $delivery_params['number'] = $shipping_address[$prefix.'address_2'];
-                    }
-                    break;
-                case 2:
-                    if(isset($shipping_address['custom_field'][$myparcelnl_general_settings['general_custom_field_homenumber_suffix']])){
-                        $delivery_params['number_suffix'] = $shipping_address[$prefix.'custom_field'][$myparcelnl_general_settings['general_custom_field_homenumber_suffix']];
-                    }
-                    if($house_number == ''){
-                        $delivery_params['number'] = $shipping_address[$prefix.'address_2'];
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return $delivery_params;
-    }
-
-    public function formatDeliveryParamsEditOrder($delivery_params, $order_id){
-        $registry = MyParcel::$registry;
-        $loader = $registry->get('load');
-        $loader->model(MyParcel()->getModelPath('shipment'));
-        $model_shipment = $registry->get('model_myparcelnl_shipment');
-        $checkout_helper = MyParcel()->shipment->checkout;
-
-        // Load delivery options stored from Frontend Checkout
-        $myparcel_delivery_options = $model_shipment->getMyParcelDeliveryOptions($order_id);
-        if($myparcel_delivery_options != NULL){
-            $delivery_type = $checkout_helper->getDeliveryTypeFromSavedData($myparcel_delivery_options);
-            if(isset($delivery_params['exclude_delivery_type'])){
-                $delivery_params['exclude_delivery_type'] = explode(';',$delivery_params['exclude_delivery_type']);
-                if(in_array($delivery_type,$delivery_params['exclude_delivery_type'])){
-                    $delivery_params['exclude_delivery_type'] = array_diff( $delivery_params['exclude_delivery_type'], [$delivery_type] );
-                }
-                $delivery_params['exclude_delivery_type'] = implode(';',$delivery_params['exclude_delivery_type']);
-            }
-        }
-        return $delivery_params;
-    }
-
-    public function getDeliveryOptionChange($myparcel_delivery,$order_data){
-        $registry = MyParcel::$registry;
-        $loader = $registry->get('load');
-        $loader->model(MyParcel()->getModelPath('shipment'));
-        $model_shipment = $registry->get('model_myparcelnl_shipment');
-        $checkout_helper = MyParcel()->shipment->checkout;
-        $shipping_code = null;
-        // Load delivery options stored from Frontend Checkout
-        $myparcel_delivery_options = $model_shipment->getMyParcelDeliveryOptions($order_data['order_id']);
-        if(!empty($myparcel_delivery_options)){
-            $delivery_type = $checkout_helper->getDeliveryTypeFromSavedData($myparcel_delivery_options);
-
-            $is_next_day = false;
-            foreach ($myparcel_delivery as $key => $item ){
-                foreach ($item as $value){
-                    foreach ($value['time'] as $time){
-                        if($time['type'] == $delivery_type){
-                            if((date('Y-m-d',strtotime($myparcel_delivery_options['date'])) <= date('Y-m-d'))){
-                                $myparcel_delivery_options['date'] = $value['date'];
-                            }
-                            $is_next_day = true;
-                            $shipping_code = $key;
-                            break;
-                        }
-                    }
-                    if($is_next_day){
-                        break;
-                    }
-                }
-                if($is_next_day){
-                    break;
-                }
-            }
-        }
-        $myparcel_delivery_options['shipping_code'] = $shipping_code;
-        return $myparcel_delivery_options;
-    }
-
-    public function formatDeliveryPrice($myparcel_delivery,$shipping_address,$sub_total,$language, $current_currency_code){
-        $registry = MyParcel::$registry;
-        $config = $registry->get('config');
-        $myparcelnl_checkout_settings = $config->get('myparcelnl_fields_checkout');
-
-        $rounding_distance = (isset($myparcelnl_checkout_settings['rounding_distance']) && $myparcelnl_checkout_settings['rounding_distance']) ? $myparcelnl_checkout_settings['rounding_distance'] : 1;
-        $distance_format = (isset($myparcelnl_checkout_settings['distance_format']) && $myparcelnl_checkout_settings['distance_format']) ? $myparcelnl_checkout_settings['distance_format'] : "m";
-        $default_price_0_text = (isset($myparcelnl_checkout_settings['default_price_0_text'])&& $myparcelnl_checkout_settings['default_price_0_text']) ? $myparcelnl_checkout_settings['default_price_0_text'] : '';
-        $time_format = (isset($myparcelnl_checkout_settings['time_format']) && $myparcelnl_checkout_settings['time_format']) ? $myparcelnl_checkout_settings['time_format'] : "H:i:s";
-
-
-        $shipment_class = MyParcel()->shipment;
-        /** @var MyParcel_Shipment_Checkout $checkout_helper **/
-        $checkout_helper = $shipment_class->checkout;
-        $delivery_prices = $checkout_helper->getDeliveryPrices(false, true, '', false, 0,$sub_total);
-        $delivery_prices_format = $checkout_helper->getDeliveryPrices(false, true, '', true, 0,$sub_total);
-
-        $currency = $registry->get('currency');
-
-        if(isset($delivery_prices[$shipping_address['iso_code_2']])){
-            foreach($myparcel_delivery['body']['data'] as $key => $value){
-                if(count($value)){
-                    foreach($value as $k => $v){
-                        foreach($v['time'] as $index => $time){
-                            $price = null;
-                            $price_convert = null;
-                            if(isset($time['price_comment'])){
-                                switch($time['price_comment']){
-                                    case 'morning':
-                                        $price = isset($delivery_prices[$shipping_address['iso_code_2']]['morning']) ? $delivery_prices[$shipping_address['iso_code_2']]['morning'] : null;
-                                        $price_convert = isset($delivery_prices_format[$shipping_address['iso_code_2']]['morning']) ? $delivery_prices_format[$shipping_address['iso_code_2']]['morning'] : null;
-                                        break;
-                                    case 'standard':
-                                        $price = isset($delivery_prices[$shipping_address['iso_code_2']]['default']) ? $delivery_prices[$shipping_address['iso_code_2']]['default'] : null;
-                                        $price_convert = isset($delivery_prices_format[$shipping_address['iso_code_2']]['default']) ? $delivery_prices_format[$shipping_address['iso_code_2']]['default'] : null;
-                                        break;
-                                    case 'night':
-                                    case 'avond':
-                                        $price = isset($delivery_prices[$shipping_address['iso_code_2']]['night']) ? $delivery_prices[$shipping_address['iso_code_2']]['night'] : null;
-                                        $price_convert = isset($delivery_prices_format[$shipping_address['iso_code_2']]['night']) ? $delivery_prices_format[$shipping_address['iso_code_2']]['night'] : null;
-                                        break;
-                                }
-                                $myparcel_delivery['body']['data'][$key][$k]['time'][$index]['price_comment_text'] = $language->get('entry_delivery_' . $time['price_comment']);
-                            }
-                            else{
-                                if(isset($v['price_comment'])){
-                                    switch($v['price_comment']){
-                                        case 'retail':
-                                            $price = isset($delivery_prices[$shipping_address['iso_code_2']]['pickup']) ? $delivery_prices[$shipping_address['iso_code_2']]['pickup'] : null;
-                                            $price_convert = isset($delivery_prices_format[$shipping_address['iso_code_2']]['pickup']) ? $delivery_prices_format[$shipping_address['iso_code_2']]['pickup'] : null;
-                                            break;
-                                        case 'retailexpress':
-                                            $price = isset($delivery_prices[$shipping_address['iso_code_2']]['pickup_express']) ? $delivery_prices[$shipping_address['iso_code_2']]['pickup_express'] : null;
-                                            $price_convert = isset($delivery_prices_format[$shipping_address['iso_code_2']]['pickup_express']) ? $delivery_prices_format[$shipping_address['iso_code_2']]['pickup_express'] : null;
-                                            break;
-                                    }
-                                }
-                                if(isset($v['location'])){
-                                    $myparcel_delivery['body']['data'][$key][$k]['location'] = htmlspecialchars($v['location']);
-                                }
-                            }
-                            if($price !== null){
-                                $myparcel_delivery['body']['data'][$key][$k]['time'][$index]['price']['amount'] = $price;
-                            }
-                            if($price_convert != null){
-                                $price = $price_convert;
-                                $myparcel_delivery['body']['data'][$key][$k]['time'][$index]['price']['amount_with_tax'] = $price_convert;
-                            }
-                            else{
-                                $price = $myparcel_delivery['body']['data'][$key][$k]['time'][$index]['price']['amount'];
-                                $myparcel_delivery['body']['data'][$key][$k]['time'][$index]['price']['amount_with_tax'] = $price;
-                            }
-
-                            //format price
-                            $myparcel_delivery['body']['data'][$key][$k]['time'][$index]['price']['text_amount'] = ($price == 0 && $default_price_0_text != '') ? $default_price_0_text : $currency->format($currency->convert($price, $time['price']['currency'], $current_currency_code), $current_currency_code);
-                            $myparcel_delivery['body']['data'][$key][$k]['time'][$index]['price']['current_currency_amount'] = round($currency->convert($price, $time['price']['currency'], $current_currency_code), 2);
-
-                            //format time
-                            if(isset($myparcel_delivery['body']['data'][$key][$k]['time'][$index]['start'])){
-                                $myparcel_delivery['body']['data'][$key][$k]['time'][$index]['start'] = date($time_format,strtotime($myparcel_delivery['body']['data'][$key][$k]['time'][$index]['start']));
-                            }
-                            if(isset($myparcel_delivery['body']['data'][$key][$k]['time'][$index]['end'])){
-                                $myparcel_delivery['body']['data'][$key][$k]['time'][$index]['end'] = date($time_format,strtotime($myparcel_delivery['body']['data'][$key][$k]['time'][$index]['end']));
-                            }
-                        }
-                        //format distance
-                        if(isset($v['distance'])){
-                            switch ($distance_format){
-                                case "km":
-                                    $myparcel_delivery['body']['data'][$key][$k]['distance'] = round($v['distance'] / 1000, $rounding_distance);
-                                    break;
-                                case "m":
-                                    break;
-                            }
-                            $myparcel_delivery['body']['data'][$key][$k]['distance_format'] = $distance_format;
-                        }
-                    }
-                }
-            }
-        }
-        return $myparcel_delivery;
-    }
-
-    function getDisableDropoffDays($myparcel_delivery){
-//        $registry = MyParcel::$registry;
-//        $config = $registry->get('config');
-//        $myparcelnl_checkout_settings = $config->get('myparcelnl_fields_checkout');
-//
-//        if(!isset($myparcelnl_checkout_settings['dropoff_days'])){
-//            return [0,6];
-//        }
-//        $dropoff_days = $myparcelnl_checkout_settings['dropoff_days'];
-
-        $enable_days = [];
-        if(isset($myparcel_delivery['delivery'])){
-            foreach ($myparcel_delivery['delivery'] as $delivery){
-                $day_num = date('w', strtotime($delivery['date']));
-                if(!in_array($day_num,$enable_days)){
-                    $enable_days[] = $day_num;
-                }
-            }
-        }
-
-        return array_diff(range(0,6),$enable_days);
-    }
-
-    public function saveDefaultMyparcelMethodXtension($options, $code){
-        if(!count($options)){
-            return;
-        }
-
-        $registry = MyParcel::$registry;
-        $session = $registry->get('session');
-        // set the first option to the default option
-        $delivery_option = $options[0];
-
-        switch ($code){
-            case "delivery":
-                foreach ($delivery_option['time'] as $time){
-                    if($time['price_comment'] == 'standard'){
-                        $time['price']['shipping_method_code'] = $code;
-                        $time['price']['text_myparcel_price_delivery'] = date('d-m-Y',strtotime($delivery_option['date'])) . ' - ' . date('H:i',strtotime($time['start'])) . ' - ' .date('H:i',strtotime($time['end']));
-                        $session->data['myparcel_price_delivery'] = $time['price'];
-
-                        $myparcel_shipping_choosed['date'] = date('Y-m-d',strtotime($delivery_option['date']));
-                        $myparcel_shipping_choosed['time'][] = $time;
-                        $myparcel_shipping_choosed['code'] = 'myparcel_'. $code;
-                        $myparcel_shipping_choosed['additional_service'] = (isset($session->data['additional_service_checked'][$code])) ? $session->data['additional_service_checked'][$code] : [];
-                        $session->data['myparcel_price_delivery']['myparcel_shipping_choosed'] = $myparcel_shipping_choosed;
-                        if(!isset($session->data['myparcel_shipping_choosed'])){
-                            $session->data['myparcel_shipping_choosed'] = $myparcel_shipping_choosed;
-                        }
-                        break;
-                    }
-                }
-                break;
-            case "pickup":
-                $pickup_detail = $delivery_option;
-                $time = $pickup_detail['time'][0];
-                $time['price']['shipping_method_code'] = $code;
-                $time['price']['text_myparcel_price_pickup'] =  $pickup_detail['location'] . ' - ' .date('d-m-Y',strtotime($pickup_detail['date'])) . ' - ' . date('H:i',strtotime($time['start']));
-                $session->data['myparcel_price_pickup'] = $time['price'];
-
-                $pickup_detail['code'] = 'myparcel_'. $code;
-                $pickup_detail['additional_service'] = [];
-                $pickup_detail['time'] = [];
-                $pickup_detail['time'][] = $time;
-                $session->data['myparcel_price_pickup']['myparcel_shipping_choosed'] = $pickup_detail;
-                if(!isset($session->data['myparcel_shipping_choosed'])){
-                    $session->data['myparcel_shipping_choosed'] = $pickup_detail;
-                }
-                break;
-        }
-    }
-
     function getCountryIsoCodeFromSession()
     {
         $registry = MyParcel::$registry;
@@ -1215,15 +796,10 @@ class MyParcel_Helper
 
         if (version_compare(VERSION, '2.0.0.0', '>=')) {
             $address_data = isset($session->data['shipping_address']) ? $session->data['shipping_address'] : (isset($session->data['payment_address']) ? $session->data['payment_address'] : null);
-            $country_code = !empty($address_data) ? $address_data['iso_code_2'] : '';//'NL';
+            $country_code = $address_data['iso_code_2'];
         } else {
             if (MyParcel()->helper->isModuleExist('d_quickcheckout', true)) {
                 $address_data['address_1'] = $session->data['shipping_address']['address_1'];
-                $address_data['postcode'] = $session->data['shipping_address']['postcode'];
-                $country_code = $session->data['shipping_address']['iso_code_2'];
-            } else if(MyParcel()->helper->isModuleExist('xnlpostcode', true)){
-                $house_number = MyParcel()->helper->getAddressNumberXNLPostcode($session->data['shipping_address']);
-                $address_data['address_1'] = $session->data['shipping_address']['address_1'].$house_number;
                 $address_data['postcode'] = $session->data['shipping_address']['postcode'];
                 $country_code = $session->data['shipping_address']['iso_code_2'];
             } else {
@@ -1250,115 +826,6 @@ class MyParcel_Helper
         return $country_code;
     }
 
-    public function getDeliveryNextWorkingDate($delivery_type = MyParcel_Shipment_Checkout::DELIVERY_TYPE_STANDARD,$order_data , $is_pickup = false){
-        $disable_days = [0];
-        //if delivery option is not standard, explude Saturday when choose the next day working
-        if($delivery_type != MyParcel_Shipment_Checkout::DELIVERY_TYPE_STANDARD){
-            $disable_days[] = 6;
-        }
-        $next_working_date = null;
-
-        $key = ($is_pickup) ? 'pickup' : 'delivery';
-        $api = MyParcel()->api;
-        $delivery_params =  $this->getDeliveryParams($order_data,'shipping_');
-        $myparcel_delivery = $api->getDeliveryOptions($delivery_params);
-        if(isset($myparcel_delivery['code']) && $myparcel_delivery['code'] == 200 && !isset($myparcel_delivery['body']['errors'])){
-            if(count($myparcel_delivery['body']['data'][$key])){
-                foreach ($myparcel_delivery['body']['data'][$key] as $delivery){
-                    $day_num = date('w', strtotime($delivery['date']));
-                    if(!in_array($day_num,$disable_days)){
-                        $next_working_date = $delivery['date'];
-                        break;
-                    }
-                }
-            }
-        }
-        return $next_working_date;
-    }
-    public function getTaxRate($tax_rate_id){
-        $registry = MyParcel::$registry;
-        $db = $registry->get('db');
-        $tax_query =$db->query("SELECT * FROM " . DB_PREFIX . "tax_rate WHERE tax_rate_id = '" . (int)$tax_rate_id . "'");
-
-        if ($tax_query->num_rows) {
-            return $tax_query->row;
-        } else {
-            return false;
-        }
-    }
-
-    public function getHeightMyparcelIframe($sub_total,$iso_code_2){
-        $height = 250; //default height
-
-        $shipment_class = MyParcel()->shipment;
-        /** @var MyParcel_Shipment_Checkout $checkout_helper **/
-        $checkout_helper = $shipment_class->checkout;
-        $delivery_prices = $checkout_helper->getDeliveryPrices(false, true, '', true, 0,$sub_total);
-        if(isset($delivery_prices[$iso_code_2])){
-            foreach ($delivery_prices[$iso_code_2] as $key => $value){
-                if($value != 'disabled'){
-                    $height += 25;
-                }
-            }
-        }
-        return $height.'px';
-    }
-    public function getUpdateIframeAddressFromSession(){
-        $registry = MyParcel::$registry;
-        $session = $registry->get('session');
-        $result = [];
-        if (version_compare(VERSION, '2.0.0.0', '>=')) {
-            // Get shipping address from session data if possible
-            if (!empty($session->data['shipping_address'])) {
-                $shipping_address = $session->data['shipping_address'];
-                $country_code = $shipping_address['iso_code_2'];
-                $result['postal_code'] = $shipping_address['postcode'];
-                $result['cc'] = $country_code;
-
-                $use_addition_address_as_number_suffix = MyParcel()->settings->general->use_addition_address_as_number_suffix;
-                if ($use_addition_address_as_number_suffix == 2) {
-                    $result['street'] = isset($shipping_address['address_1']) ? $shipping_address['address_1'] : '';
-                    $result['number'] = isset($shipping_address['address_2']) ? $shipping_address['address_2'] : '';
-                } else {
-
-                    //'Address field 1' and 'address field 2' will both be used for the full address
-                    if($use_addition_address_as_number_suffix == 0){
-                        $shipping_address['address_1'] .=  ' ' .$shipping_address['address_2'];
-                    }
-
-                    $address_parts = MyParcel()->helper->getAddressComponents($shipping_address['address_1']);
-                    $result['number'] = isset($address_parts['house_number']) ? $address_parts['house_number'] : '';
-                    $result['street'] = isset($address_parts['street']) ? $address_parts['street'] : '';
-                }
-            }
-        } else {
-            if (!empty($session->data['shipping_country_id'])) {
-                $registry = MyParcel::$registry;
-                $loader = $registry->get('load');
-                $address_1 = '';
-
-                if (!empty($session->data['shipping_address_id'])) {
-                    $address_id = $session->data['shipping_address_id'];
-                    $loader->model('account/address');
-                    $model_address = $registry->get('model_account_address');
-                    $address_data = $model_address->getAddress($address_id);
-                    $address_1 = $address_data['address_1'];
-                    $country_code = $address_data['iso_code_2'];
-                } else {
-                    if (!empty($session->data['guest']['shipping']['address_1'])) {
-                        $address_1 = $session->data['guest']['shipping']['address_1'];
-                        $country_code = $session->data['guest']['shipping']['iso_code_2'];
-                    }
-                }
-
-                $address_parts = MyParcel()->helper->getAddressComponents($address_1);
-                $result['number'] = isset($address_parts['house_number']) ? $address_parts['house_number'] : '';
-                $result['street'] = isset($address_parts['street']) ? $address_parts['street'] : '';
-                $result['postal_code'] = $session->data['shipping_postcode'];
-            }
-        }
-        return $result;
-    }
 }
 
 return new MyParcel_Helper();

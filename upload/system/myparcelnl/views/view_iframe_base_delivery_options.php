@@ -277,7 +277,7 @@
                 overflow: hidden;
             }
             #mypa-location-container{
-                overflow-y: scroll;
+                overflow: scroll;
                 max-height: 100%
             }
             .mypa-price {
@@ -459,11 +459,6 @@
                 width:20px;
                 height:20px;
                 transform: rotate(45deg);
-            }
-            .mypa-delivery-content {
-                display: flex;
-                flex-direction: column;
-                height: 100%;
             }
 
             <?php //-------------------------- CUSTOM STYLES -------------------------- ?>
@@ -666,11 +661,6 @@
                 <?php $settings_decoded = html_entity_decode(urldecode($_GET['mypa_settings'])) ?>
                 <?php if (!empty($settings_decoded)) : ?>
                     window.mypa.settings = <?php echo $settings_decoded ?>;
-                    var shipping_address = <?php echo $shipping_address; ?>;
-                    window.mypa.settings.postal_code = shipping_address.postal_code;
-                    window.mypa.settings.number = shipping_address.number;
-                    window.mypa.settings.street = shipping_address.street;
-                    window.mypa.settings.cc = shipping_address.cc;
                 <?php endif; ?>
             <?php endif; ?>
         }

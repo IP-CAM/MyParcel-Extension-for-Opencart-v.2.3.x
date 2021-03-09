@@ -12,10 +12,6 @@ $delivery_options = $checkout_helper::$delivery_extra_options;
 
 // get delivery option fees/prices
 $registry = MyParcel::$registry;
-
-$config = $registry->get('config');
-$theme = !empty($config->get('config_template')) ? $config->get('config_template') : $config->get('config_theme');
-
 $cart = $registry->get('cart');
 $config = $registry->get('config');
 $session = $registry->get('session');
@@ -31,16 +27,16 @@ $export_default_settings    = $config->get('myparcelnl_fields_export');
 $price_options = array_merge( $delivery_options, $delivery_types );
 
 if (MyParcel()->helper->isModuleExist('d_quickcheckout', true)) {
-    $prices = $checkout_helper->getDeliveryPrices(true, false, '+ ', true, 0, $cart->getSubTotal());
+    $prices = $checkout_helper->getDeliveryPrices(true, false, '+ ');
 } else {
-    $prices = $checkout_helper->getDeliveryPrices(true, true, '', true, 0, $cart->getSubTotal());
+    $prices = $checkout_helper->getDeliveryPrices();
 }
 
 // exclude delivery types
 $exclude_delivery_types = array();
 foreach ($checkout_helper::$delivery_types_as_value as $delivery_type => $key) {
     // JS API correction
-    if ($delivery_type == 'standard' || $delivery_type == 'mailbox' || $delivery_type == 'avond') {
+    if ($delivery_type == 'standard' || $delivery_type == 'mailbox') {
         continue;
     }
     if (!isset($checkout_settings[$delivery_type.'_enabled']) || (isset($checkout_settings[$delivery_type.'_enabled']) && empty($checkout_settings[$delivery_type.'_enabled']) ) ) {
@@ -94,22 +90,11 @@ if (version_compare(VERSION, '2.0.0.0', '>=')) {
     if (!empty($session->data['shipping_address'])) {
         $shipping_address = $session->data['shipping_address'];
         $country_code = $shipping_address['iso_code_2'];
+        $address_parts = MyParcel()->helper->getAddressComponents($shipping_address['address_1']);
+        $settings['number'] = isset($address_parts['house_number']) ? $address_parts['house_number'] : '';
+        $settings['street'] = isset($address_parts['street']) ? $address_parts['street'] : '';
         $settings['postal_code'] = $shipping_address['postcode'];
         $settings['cc'] = $country_code;
-
-        $use_addition_address_as_number_suffix = MyParcel()->settings->general->use_addition_address_as_number_suffix;
-        if ($use_addition_address_as_number_suffix == 2) {
-            $settings['street'] = isset($shipping_address['address_1']) ? $shipping_address['address_1'] : '';
-            $settings['number'] = isset($shipping_address['address_2']) ? $shipping_address['address_2'] : '';
-        } else {
-            //'Address field 1' and 'address field 2' will both be used for the full address
-            if($use_addition_address_as_number_suffix == 0){
-                $shipping_address['address_1'] .= ' ' . $shipping_address['address_2'];
-            }
-            $address_parts = MyParcel()->helper->getAddressComponents($shipping_address['address_1']);
-            $settings['number'] = isset($address_parts['house_number']) ? $address_parts['house_number'] : '';
-            $settings['street'] = isset($address_parts['street']) ? $address_parts['street'] : '';
-        }
     }
 } else {
     if (!empty($session->data['shipping_country_id'])) {
@@ -225,6 +210,5 @@ $ajax_get_loading_icon =  MyParcel()->getImageUrl() . 'myparcel-spin.gif';
         window.myparcel_ajax_get_delivery_iframe_content = "<?php echo $myparcel_ajax_get_delivery_iframe_content ?>";
         window.myparcel_loading_icon = "<?php echo $ajax_get_loading_icon ?>";
         window.entry_loading = "<?php echo MyParcel()->lang->get('entry_loading') . '...' ?>";
-        window.myparcel_current_theme = "<?php echo $theme; ?>"
     });
 </script>

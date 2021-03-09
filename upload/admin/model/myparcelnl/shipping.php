@@ -26,7 +26,7 @@ class ModelMyparcelnlShipping extends Model
 					} else {
 						$this->load->language('shipping/' . $extension);
 					}
-                    //$name = !empty($this->language->get('heading_title')) ? $this->language->get('myparcel_heading_title') : $this->language->get('heading_title');
+
 					$result[] = array(
 						'name' => $this->language->get('heading_title'),
 						'code' => $extension,

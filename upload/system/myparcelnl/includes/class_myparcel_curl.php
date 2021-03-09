@@ -153,10 +153,6 @@ class MyParcel_Curl
                 if (isset($error['message'])) {
                     $error_messages[] = '<li>' . $error['message'] . '</li>';
                 }
-                else if(isset($error['human'])){
-                    $message = (is_array($error['human'])) ? implode(',',$error['human']) : $error['human'];
-                    $error_messages[] = '<li>' . $message . '</li>';
-                }
             }
 
             return sprintf('<ul>%s</ul>', implode("\r\n", $error_messages));

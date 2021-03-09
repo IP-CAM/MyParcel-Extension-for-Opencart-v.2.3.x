@@ -272,9 +272,6 @@
             this.slideLeft = bind(this.slideLeft, this);
             var $el, $tabs, date, delivery, deliveryTimes, html, i, index, len, ref;
             this.deliveryDays = deliveryDays;
-            if (typeof window.mypa.settings.deliverydays_window === "undefined") {
-                $("#mypa-slider-holder").hide()
-            }
             if (deliveryDays.length < 1) {
                 $('mypa-delivery-row').addClass('mypa-hidden');
                 return;
@@ -283,11 +280,7 @@
             deliveryDays.sort(this.orderDays);
             deliveryTimes = window.mypa.sortedDeliverytimes = {};
             $el = $('#mypa-tabs').html('');
-            if (typeof window.mypa.settings.deliverydays_window === "undefined") {
-                window.mypa.deliveryDays = 1;
-            } else {
-                window.mypa.deliveryDays = deliveryDays.length;
-            }
+            window.mypa.deliveryDays = deliveryDays.length;
             index = 0;
             ref = this.deliveryDays;
             for (i = 0, len = ref.length; i < len; i++) {
@@ -421,10 +414,8 @@
         if (response.data.message === 'No results') {
             $('#mypa-no-options').html('Geen bezorgopties gevonden voor het opgegeven adres.');
             $('.mypa-overlay').removeClass('mypa-hidden');
-            document.cookie = "myparcel_empty_results=1";
             return;
         }
-        document.cookie = "myparcel_empty_results=0";
         $('.mypa-overlay').addClass('mypa-hidden');
         if (window.mypa.settings.cc === NATIONAL) {
             $('#mypa-delivery-option-check').bind('click', function() {
@@ -436,7 +427,6 @@
             setDefaultDelivery(response.data.delivery[0]);
         }
         preparePickup(response.data.pickup);
-        window.parent.window.MYPARCEL_CHECKOUT.journalThemeEventActivated();
         $('#mypa-delivery-options-title').on('click', function() {
             var date;
             if (window.mypa.settings.cc === NATIONAL) {
@@ -472,10 +462,7 @@
             }
         });
         // End custom code
-        // Custom code for journal2 theme
-        $("#mypa-delivery-options-container").on("click", "input[name='mypa-delivery-time'], input[name='mypa-delivery-type'], .mypa-onoffswitch-checkbox,  input[name='mypa-pickup-option']", function(){
-            window.parent.window.MYPARCEL_CHECKOUT.journalThemeEventActivated();
-        });
+
         return updateInputField();
     };
 
@@ -499,10 +486,8 @@
      */
 
     setDefaultDelivery = function(deliveryObj) {
-        var time = { 0: deliveryObj.time[0] };
-        var options = {date: deliveryObj.date, time:time};
         var json;
-        json = JSON.stringify(options);
+        json = JSON.stringify(deliveryObj.time[0]);
         return $('#mypa-delivery-option-check').val(json);
     };
 
@@ -539,9 +524,7 @@
         }
         showDefaultPickupLocation('#mypa-pickup-address', filter[PICKUP_TIMES[NORMAL_PICKUP]][0]);
         if (window.mypa.settings.cc === NATIONAL) {
-            if (PICKUP_TIMES[MORNING_PICKUP] in filter) {
-                showDefaultPickupLocation('#mypa-pickup-express-address', filter[PICKUP_TIMES[MORNING_PICKUP]][0]);
-            }
+            showDefaultPickupLocation('#mypa-pickup-express-address', filter[PICKUP_TIMES[MORNING_PICKUP]][0]);
         }
         $('#mypa-pickup-address').off().bind('click', renderPickup);
         $('#mypa-pickup-express-address').off().bind('click', renderExpressPickup);
@@ -724,7 +707,7 @@
                 $('input#mypa-only-recipient').prop('checked', true).prop('disabled', true);
                 $('label[for=mypa-only-recipient] span.mypa-price').html('incl.');
             } else {
-                onlyRecipientPrice = window.mypa.settings.price[window.mypa.settings.cc].only_recipient;
+                onlyRecipientPrice = window.mypa.settings.price[this.cc].only_recipient;
                 $('input#mypa-only-recipient').prop('disabled', false);
                 $('label[for=mypa-only-recipient] span.mypa-price').html(onlyRecipientPrice);
             }

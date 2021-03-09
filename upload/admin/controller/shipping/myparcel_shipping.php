@@ -1,7 +1,7 @@
 <?php
 require_once DIR_SYSTEM . 'myparcelnl/class_myparcel.php';
 
-class ControllerExtensionShippingMyparcelShipping extends Controller {
+class ControllerShippingMyparcelShipping extends Controller {
 	private $error = array();
 
 	public function index() {

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <modification>
     <name>MyParcel NL - Ajax Quick Checkout</name>
-    <version>1.1.7</version>
+    <version>1.1.2</version>
     <code>MyParcelNL_ajax_checkout</code>
     <author>MyParcel NL</author>
-    <link>https://www.myparcel.nl/</link>
+    <link>http://www.myparcelnl.com</link>
 
     <!-- ________________ SYSTEM\LIBRARY\CART\CART.PHP ________________ -->
     <!-- _________________________ CART CLASS _________________________ -->

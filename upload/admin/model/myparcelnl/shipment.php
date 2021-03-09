@@ -3,17 +3,6 @@ class ModelMyparcelnlShipment extends Model
 {
 	static $table_name = 'myparcel_shipment';
 
-    /**
-     * Get myparcel export settings saved from backoffice
-     * @param int $order_id
-     * @return array options
-     **/
-    public function getData($order_id, $column_name)
-    {
-        $order_query = $this->db->query("SELECT "  . $column_name . " FROM `" . DB_PREFIX . self::$table_name . "` WHERE order_id = " . $order_id . " LIMIT 1");
-        return $this->getValueFromQuery($column_name, $order_query);
-    }
-
 	/**
 	 * Get myparcel export settings saved from backoffice
 	 * @param int $order_id
